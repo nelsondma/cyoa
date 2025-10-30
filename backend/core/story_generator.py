@@ -9,6 +9,7 @@ from core.prompts import STORY_PROMPT
 from models.story import Story, StoryNode
 from core.models import StoryLLMResponse, StoryNodeLLM
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
@@ -16,7 +17,24 @@ class StoryGenerator:
 
     @classmethod
     def _get_llm(cls):
-        return ChatOpenAI(model="gpt-4-turbo")
+
+        # 1. RETRIEVE THE SECURE CHOREO VARIABLES
+        choreo_service_url = os.getenv("CHOREO_OPENAI_CONNECTION_SERVICEURL")         
+        choreo_auth_token = os.getenv("CHOREO_OPENAI_CONNECTION_CONSUMERKEY") 
+
+        # 2. CHECK IF WE ARE DEPLOYED (These variables only exist on Choreo)
+        if choreo_service_url and choreo_auth_token:
+
+            # 3. ROUTE THE REQUEST VIA CHOREO'S PROXY
+            # We must use the base_url parameter to override the default OpenAI destination.
+            # We use the token for the api_key field to satisfy the client's authentication requirement.
+            return ChatOpenAI(
+                model="gpt-4o-mini",
+                api_key=choreo_auth_token,        # Authenticates your app to Choreo
+                base_url=choreo_service_url       # Reroutes the request to Choreo's proxy address
+            )
+
+
 
     @classmethod
     def generate_story(cls, db: Session, session_id: str, theme: str = "fantasy") -> Story:
