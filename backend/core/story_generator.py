@@ -28,10 +28,21 @@ class StoryGenerator:
             # 3. ROUTE THE REQUEST VIA CHOREO'S PROXY
             # We must use the base_url parameter to override the default OpenAI destination.
             # We use the token for the api_key field to satisfy the client's authentication requirement.
+            # API Key security scheme: send key in `apikey` header to the Choreo proxy
+            # Ref: https://wso2.com/choreo/docs/develop-components/sharing-and-reusing/use-a-connection-in-your-service/
             return ChatOpenAI(
                 model="gpt-4o-mini",
-                api_key=choreo_auth_token,        # Authenticates your app to Choreo
-                base_url=choreo_service_url       # Reroutes the request to Choreo's proxy address
+                base_url=choreo_service_url,      # Route via Choreo proxy
+                api_key="not-used",              # Required by client; real key is sent via headers
+                default_headers={
+                    "apikey": choreo_auth_token,
+                }
+            )
+        else:
+            # 4. LOCAL DEVELOPMENT: Use OpenAI API key from .env file
+            return ChatOpenAI(
+                model="gpt-4-turbo",
+                api_key=settings.OPENAI_API_KEY
             )
 
 
