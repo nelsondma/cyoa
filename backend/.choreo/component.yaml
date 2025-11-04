@@ -12,4 +12,4 @@ endpoints:
 dependencies:
     connectionReferences:
     - name: openai-connection
-      resourceRef: service:/nm-cyoa/openai/v1/proxy/PROJECT
+      resourceRef: service:/nm-cyoa/openaiapi/v1/proxy/PROJECT
